@@ -1,0 +1,155 @@
+reset()
+var('asq,bsq,Asq,Bsq,mu')
+
+def SetKL(a2,b2):
+    global asq,bsq,Asq,Bsq,mu
+    asq = a2
+    bsq = b2
+    Asq = asq+bsq
+    Bsq = asq-bsq
+    mu = asq^2/(asq^2-bsq^2)
+
+def KummerDbl(xsq,zsq):
+    global asq,bsq,Asq,Bsq,mu
+    s0 = Bsq*(xsq+zsq)^2
+    t0 = Asq*(xsq-zsq)^2
+    x3sq = bsq*(s0+t0)^2
+    z3sq = asq*(s0-t0)^2
+    return (x3sq,z3sq)
+    
+def KummerAdd(x1sq,z1sq,x2sq,z2sq,xsq,zsq):
+    global asq,bsq,Asq,Bsq,mu
+    s0 = Bsq*(x1sq+z1sq)*(x2sq+z2sq)
+    t0 = Asq*(x1sq-z1sq)*(x2sq-z2sq)
+    x3sq = zsq*(s0+t0)^2
+    z3sq = xsq*(s0-t0)^2
+    return (x3sq,z3sq)
+
+def psi(xsq,zsq):
+    global asq,bsq,Asq,Bsq,mu
+    s0 = asq*xsq
+    t0 = asq*xsq - bsq*zsq
+    return s0/t0
+    
+def psiInv(X):
+    global asq,bsq,Asq,Bsq,mu
+    xsq = X*bsq
+    zsq = (X-1)*asq
+    return (xsq,zsq)
+    
+def addT2(alpha,X):
+    global asq,bsq,Asq,Bsq,mu
+    Ysq = X*(X-1)*(X-mu)
+    tmp = mu + 1 + Ysq/(X-alpha)^2 - X - alpha
+    return tmp
+    
+def ECdblXcoordinate(X1):
+    global asq,bsq,Asq,Bsq,mu
+    Y1sq = X1*(X1-1)*(X1-mu)
+    msq = (3*X1^2-2*(mu+1)*X1+mu)^2/(4*Y1sq)
+    X3 = mu+1+msq-2*X1
+    return X3
+    
+def ECadd(X1,Y1,X2,Y2):
+    global asq,bsq,Asq,Bsq,mu
+    m = (Y1-Y2)/(X1-X2)
+    X3 = mu + 1 + m^2 - X1 - X2
+    return X3    
+
+def ECsubtract(X1,Y1,X2,Y2):
+    global asq,bsq,Asq,Bsq,mu
+    m = (Y1+Y2)/(X1-X2)
+    X = mu + 1 + m^2 - X1 - X2
+    return X    
+
+def ECaddXcoordinate(X1,X2,X):
+    global asq,bsq,Asq,Bsq,mu
+    Y1sq = X1*(X1-1)*(X1-mu)
+    Y2sq = X2*(X2-1)*(X2-mu)
+    Y1plusY2sq = (X1+X2+X-mu-1)*(X2-X1)^2
+    Y2minusY1sq = 2*Y1sq + 2*Y2sq - Y1plusY2sq
+    msq = Y2minusY1sq/(X2-X1)^2
+    X3 = mu + 1 + msq - X1 - X2
+    return X3
+    
+def verifyDblKummerToEC(xsq,zsq):
+    global asq,bsq,Asq,Bsq,mu
+    X = psi(xsq,zsq).simplify_full()
+    X1 = X
+    X3 = ECdblXcoordinate(X1).simplify_full()
+    val = KummerDbl(xsq,zsq)
+    x3sq = val[0]
+    z3sq = val[1]
+    X3prime = psi(x3sq,z3sq)
+    X3prime = addT2(mu,X3prime).simplify_full()
+    tmp = X3 - X3prime
+    return tmp.simplify_full()
+    
+def verifyDblECToKummer(X1):
+    global asq,bsq,Asq,Bsq,mu
+    val = psiInv(X1)
+    x1sq = val[0]
+    z1sq = val[1]
+    val = KummerDbl(x1sq,z1sq)
+    x3sq = val[0]
+    z3sq = val[1]
+    X3 = ECdblXcoordinate(X1)
+    X3 = addT2(mu,X3)
+    val = psiInv(X3)
+    x3primesq = val[0]
+    z3primesq = val[1]
+    tmp = x3sq*z3primesq - x3primesq*z3sq
+    return tmp.simplify_full()
+    
+def verifyAddECToKummer(X1,Y1,X2,Y2):
+    global asq,bsq,Asq,Bsq,mu
+    
+    X3 = ECadd(X1,Y1,X2,Y2)
+    X = ECsubtract(X1,Y1,X2,Y2)
+    
+    X1prime = addT2(mu,X1)
+    val = psiInv(X1prime)
+    x1sq = val[0]
+    z1sq = val[1]
+            
+    X2prime = addT2(mu,X2)
+    val = psiInv(X2prime)
+    x2sq = val[0]
+    z2sq = val[1]
+        
+    X3prime = addT2(mu,X3)
+    val = psiInv(X3prime)
+    x3sq = val[0]
+    z3sq = val[1]
+        
+    Xprime = addT2(mu,X)
+    val = psiInv(Xprime)
+    xsq = val[0]
+    zsq = val[1]
+        
+    val = KummerAdd(x1sq,z1sq,x2sq,z2sq,xsq,zsq)
+    x3primesq = val[0]
+    z3primesq = val[1]
+        
+    tmp = x3sq*z3primesq - x3primesq*z3sq
+    tmp1 = tmp.numerator()
+    g1 = Y1^2 - X1*(X1-1)*(X1-mu)
+    g2 = Y2^2 - X2*(X2-1)*(X2-mu)
+    tmp2 = tmp1.maxima_methods().divide(g1)
+    tmp1 = tmp2[1]
+    tmp2 = tmp1.maxima_methods().divide(g2)
+    tmp1 = tmp2[1]
+    return tmp1.simplify_full()
+        
+var('asq,bsq')
+SetKL(asq,bsq)
+
+var('xsq,zsq')
+print verifyDblKummerToEC(xsq,zsq)
+
+var('X1')
+print verifyDblECToKummer(X1)
+
+var('X1,Y1,X2,Y2')
+print verifyAddECToKummer(X1,Y1,X2,Y2)
+
