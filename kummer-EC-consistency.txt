@@ -144,12 +144,30 @@ def verifyAddECToKummer(X1,Y1,X2,Y2):
 var('asq,bsq')
 SetKL(asq,bsq)
 
+val = KummerDbl(asq,bsq) # double of (a^2,b^2) is (a^2,b^2)
+tmp = val[0]/val[1]
+print tmp.full_simplify()
+
+val = KummerDbl(bsq,asq) # double of (b^2,a^2) is (a^2,b^2)
+tmp = val[0]/val[1]
+print tmp.full_simplify()
+
 var('xsq,zsq')
-print verifyDblKummerToEC(xsq,zsq)
+val = KummerAdd(xsq,zsq,asq,bsq,xsq,zsq) # addition of (x^2,z^2) and (a^2,b^2) is (x^2,z^2)
+tmp = val[0]/val[1]
+print tmp.full_simplify()
+
+val = KummerAdd(xsq,zsq,xsq,zsq,asq,bsq) # addition of (x^2,z^2) and (x^2,z^2) is 2(x^2,z^2)
+tmp1 = val[0]/val[1]
+val = KummerDbl(xsq,zsq)
+tmp2 = val[0]/val[1]
+print tmp1 - tmp2
+
+var('xsq,zsq')
+print verifyDblKummerToEC(xsq,zsq) # consistency of doubling on Kummer Line and EC
 
 var('X1')
-print verifyDblECToKummer(X1)
+print verifyDblECToKummer(X1) # consistency of doubling on EC and Kummer Line
 
 var('X1,Y1,X2,Y2')
-print verifyAddECToKummer(X1,Y1,X2,Y2)
-
+print verifyAddECToKummer(X1,Y1,X2,Y2) # consistency of pseudo-addition on EC and Kummer Line
