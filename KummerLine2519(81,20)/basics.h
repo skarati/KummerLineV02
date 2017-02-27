@@ -51,6 +51,34 @@ const vec ab11 = {1,1,20,81};//{1,1,61,101};
 const vec zxba = {1,64,20,81};//{1,4,61,101}; //{1,4,61,101};
 const vec abxz[2] = {{20,81,1,64}, {1,64,20,81}};//{{61,101,1,4}, {1,4,61,101}};
 
+const u64 mask28 = 0xfffffff;
+const u64 mask27 = 0x7ffffff;
+
+
+inline void makeUnique(gfe *op, gfe *inp) {
+        gfe t[2];
+        u8 i;
+
+        for(i=0;i<9;i++) t[0].v[i] = inp->v[i];
+        for(i=1;i<9;i++) t[1].v[i] = 0; t[1].v[0] = inp->v[0] - ((1ULL<<27)-9);
+        if (
+                ((inp->v[9]&mask27)==mask27) &&
+                ((inp->v[8]&mask28)==mask28) &&
+                ((inp->v[7]&mask28)==mask28) &&
+                ((inp->v[6]&mask28)==mask28) &&
+                ((inp->v[5]&mask28)==mask28) &&
+                ((inp->v[4]&mask28)==mask28) &&
+                ((inp->v[3]&mask28)==mask28) &&
+                ((inp->v[2]&mask28)==mask28) &&
+                ((inp->v[1]&mask28)==mask28) &&
+                (inp->v[0]>((1ULL<<27)-10))
+        ) {
+                for(i=0;i<9;i++) op->v[i] = t[1].v[i];
+        } else {
+                for(i=0;i<9;i++) op->v[i] = t[0].v[i];
+        }
+}
+
 void convert_ctoi(gfe *r64, const unsigned char r[32]){
 	r64->v[0]  = r[0];
 	r64->v[0] |= ((u32)r[1] << 8);

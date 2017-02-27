@@ -60,6 +60,7 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 	z = re[1];
 	invert(&temp,&z);
 	mul_gfe(&temp,&x,&temp);
+	makeUnique(&temp,&temp);
 	convert_itoc(&temp,op);
 
 	return xinvz.v[0];
@@ -111,6 +112,7 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 	z = re[1];
 	invert(&temp,&z);
 	mul_gfe(&temp,&x,&temp);
+	makeUnique(&temp,&temp);
 	convert_itoc(&temp,op);
 
 	return xinvz.v[0];
