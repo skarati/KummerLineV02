@@ -100,8 +100,8 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
   	for(i=31;i>=0;i--){
     		for(;j>=0;j--){
 			bit = (n[i]>>j) & 1;
-			// gfe4x_hadamard(&np, &np);
-			gfe4x_hadamardUnreduced(&np, &np);
+			gfe4x_hadamard(&np, &np);
+			//gfe4x_hadamardUnreduced(&np, &np);
 			gfe4x_permute(&npt,&np,bit);
 			mul_gfe4(&np, &np, &npt);
 			mulconst_gfe4Unreduced(&np, &np, &BABA);
