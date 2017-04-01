@@ -8,5 +8,5 @@ Kummer2519.m, Kummer2519.sh: magma code and associated shell script used to find
 Kummer2663.m, Kummer2663.sh: magma code and associated shell script used to find KummerLine25519(82,77).
 Kummer25519.m, Kummer25519.sh: magma code and associated shell script used to find KummerLine2663(260,139).
 
-The implementation of the KummerLines: KummerLine2519(101,61) and KummerLine2663(278,67) are available at:
+The codes of implementations of the KummerLines: KummerLine2519(101,61) and KummerLine2663(278,67) are available at:
 https://github.com/skarati/Kummer_Line
