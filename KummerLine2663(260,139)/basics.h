@@ -7,6 +7,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include <inttypes.h>
+#include <stdint.h>
+
 
 
 #define align __attribute__ ((aligned (32)))
@@ -24,11 +27,17 @@
 
 typedef unsigned char u8;
 typedef unsigned long long u64;
+typedef unsigned __int128 u128;
 typedef __m256i vec;
 
 typedef struct{
 	unsigned long long v[10];
 }gfe;
+
+typedef struct{
+	u64 v[5];
+}gfe54;
+
 
 typedef struct {
   	vec v[10];
@@ -53,28 +62,25 @@ const vec abxz[2] = {{139,260,1,2}, {1,2,139,260}};//{{61,101,1,4}, {1,4,61,101}
 
 const u64 mask27 = 0x7ffffff;
 const u64 mask23 = 0x07fffff;
+const u64 mask54 = 0x3fffffffffffff;
+const u64 mask50 = 0x3ffffffffffff;
 
-inline void makeUnique(gfe *op, gfe *inp) {
+inline void makeUnique(gfe54 *op, gfe54 *inp) {
         gfe t[2];
         u8 i;
 
-        for(i=0;i<10;i++) t[0].v[i] = inp->v[i];
-        for(i=1;i<10;i++) t[1].v[i] = 0; t[1].v[0] = inp->v[0] - ((1ULL<<23)-3);
+        for(i=0;i<5;i++) t[0].v[i] = inp->v[i];
+        for(i=1;i<5;i++) t[1].v[i] = 0; t[1].v[0] = inp->v[0] - ((1ULL<<54)-3);
         if (
-                ((inp->v[9]&mask23)==mask23) &&
-                ((inp->v[8]&mask27)==mask27) &&
-                ((inp->v[7]&mask27)==mask27) &&
-                ((inp->v[6]&mask27)==mask27) &&
-                ((inp->v[5]&mask27)==mask27) &&
-                ((inp->v[4]&mask27)==mask27) &&
-                ((inp->v[3]&mask27)==mask27) &&
-                ((inp->v[2]&mask27)==mask27) &&
-                ((inp->v[1]&mask27)==mask27) &&
-                (inp->v[0]>((1ULL<<23)-4))
+                ((inp->v[4]&mask27)==mask50) &&
+                ((inp->v[3]&mask27)==mask54) &&
+                ((inp->v[2]&mask27)==mask54) &&
+                ((inp->v[1]&mask27)==mask54) &&
+                (inp->v[0]>=((1ULL<<54)-3))
         ) {
-                for(i=0;i<10;i++) op->v[i] = t[1].v[i];
+                for(i=0;i<5;i++) op->v[i] = t[1].v[i];
         } else {
-                for(i=0;i<10;i++) op->v[i] = t[0].v[i];
+                for(i=0;i<5;i++) op->v[i] = t[0].v[i];
         }
 }
 
@@ -135,7 +141,44 @@ void convert_ctoi(gfe *r64, const unsigned char r[34]){
 
 }
 
-void convert_itoc(gfe *r64, unsigned char r[32]){
+void pack54(gfe *r64, gfe54 *r54){
+	r54->v[0]  = (r64->v[0]&0x7ffffff);		/*27*/
+	r54->v[0] |= (r64->v[1]&0x7ffffff)<<27;		/*54*/
+
+	r54->v[1]  = (r64->v[2]&0x7ffffff);		/*27*/
+	r54->v[1] |= (r64->v[3]&0x7ffffff)<<27;		/*54*/ 
+ 
+	r54->v[2]  = (r64->v[4]&0x7ffffff);		/*27*/
+	r54->v[2] |= (r64->v[5]&0x7ffffff)<<27;		/*54*/ 
+
+	r54->v[3]  = (r64->v[6]&0x7ffffff);		/*27*/
+	r54->v[3] |= (r64->v[7]&0x7ffffff)<<27;		/*54*/ 
+
+	r54->v[4]  = (r64->v[8]&0x7ffffff);		/*27*/
+	r54->v[4] |= (r64->v[9]&0x7fffff)<<27;		/*54*/ 
+
+}
+
+void unpack54(gfe *r64, gfe54 *r54){
+	r64->v[0] = r54->v[0]&0x7ffffff;		/*27*/
+	r64->v[1] = (r54->v[0]>>27)&0x7ffffff;		/*54*/
+
+	r64->v[2] = r54->v[1]&0x7ffffff;		/*27*/
+	r64->v[3] = (r54->v[1]>>27)&0x7ffffff;		/*54*/
+
+	r64->v[4] = r54->v[2]&0x7ffffff;		/*27*/
+	r64->v[5] = (r54->v[2]>>27)&0x7ffffff;		/*54*/
+
+	r64->v[6] = r54->v[3]&0x7ffffff;		/*27*/
+	r64->v[7] = (r54->v[3]>>27)&0x7ffffff;		/*54*/
+
+	r64->v[8] = r54->v[4]&0x7ffffff;		/*27*/
+	r64->v[9] = (r54->v[4]>>27)&0x7fffff;		/*50*/
+}
+
+
+
+void convert_itoc(gfe *r64, unsigned char r[34]){
 	r[0] = r64->v[0] & 0xff;		/*8*/
 	r64->v[0] = r64->v[0]>>8;	
 	r[1] = r64->v[0] & 0xff;		/*16*/
@@ -221,6 +264,83 @@ void convert_itoc(gfe *r64, unsigned char r[32]){
 	r[33] = r64->v[9] & 0x3;		/*23*/
 }
 
+void convert_i54toc(gfe54 *r54, unsigned char r[34]){
+	r[0] = r54->v[0] & 0xff;		/*8*/
+	r54->v[0] = r54->v[0]>>8;	
+	r[1] = r54->v[0] & 0xff;		/*16*/
+	r54->v[0] = r54->v[0]>>8;
+	r[2] = r54->v[0] & 0xff;		/*24*/
+	r54->v[0] = r54->v[0]>>8;
+	r[3] = r54->v[0] & 0xff;		/*32*/
+	r54->v[0] = r54->v[0]>>8;
+	r[4] = r54->v[0] & 0xff;		/*40*/
+	r54->v[0] = r54->v[0]>>8;
+	r[5] = r54->v[0] & 0xff;		/*48*/
+	r54->v[0] = r54->v[0]>>8;
+	r[6] = r54->v[0] & 0x3f;		/*54*/
+
+	r[6] = r[6]|(r54->v[1] & 0x3) << 6;	/*2*/
+	r54->v[1] = r54->v[1] >> 2;
+	r[7] = r54->v[1] & 0xff;		/*10*/
+	r54->v[1] = r54->v[1]>>8;
+	r[8] = r54->v[1] & 0xff;		/*18*/
+	r54->v[1] = r54->v[1]>>8;
+	r[9] = r54->v[1] & 0xff;		/*26*/
+	r54->v[1] = r54->v[1]>>8;		
+	r[10] = r54->v[1] & 0xff;		/*34*/
+	r54->v[1] = r54->v[1]>>8;
+	r[11] = r54->v[1] & 0xff;		/*42*/
+	r54->v[1] = r54->v[1]>>8;	
+	r[12] = r54->v[1] & 0xff;		/*50*/
+	r54->v[1] = r54->v[1]>>8;
+	r[13] = r54->v[1] & 0xf;		/*54*/
+
+	r[13] = r[13]|(r54->v[2] & 0xf) << 4;	/*4*/
+	r54->v[2] = r54->v[2] >> 4;
+	r[14] = r54->v[2] & 0xff;		/*12*/
+	r54->v[2] = r54->v[2]>>8;
+	r[15] = r54->v[2] & 0xff;		/*20*/
+	r54->v[2] = r54->v[2]>>8;
+	r[16] = r54->v[2] & 0xff;		/*28*/
+	r54->v[2] = r54->v[2]>>8;
+	r[17] = r54->v[2] & 0xff;		/*36*/
+	r54->v[2] = r54->v[2]>>8;
+	r[18] = r54->v[2] & 0xff;		/*44*/
+	r54->v[2] = r54->v[2]>>8;
+	r[19] = r54->v[2] & 0xff;		/*52*/
+	r54->v[2] = r54->v[2]>>8;
+	r[20] = r54->v[2] & 0x3;		/*54*/
+
+	r[20] = r[20]|(r54->v[3] & 0x3f) << 2;	/*6*/
+	r54->v[3] = r54->v[3] >> 6;
+	r[21] = r54->v[3] & 0xff;		/*14*/
+	r54->v[3] = r54->v[3]>>8;
+	r[22] = r54->v[3] & 0xff;		/*22*/
+	r54->v[3] = r54->v[3]>>8;
+	r[23] = r54->v[3] & 0xff;		/*30*/
+	r54->v[3] = r54->v[3]>>8;
+	r[24] = r54->v[3] & 0xff;		/*38*/
+	r54->v[3] = r54->v[3]>>8;
+	r[25] = r54->v[3] & 0xff;		/*46*/
+	r54->v[3] = r54->v[3]>>8;
+	r[26] = r54->v[3] & 0xff;		/*54*/
+
+	r[27] = r54->v[4] & 0xff;		/*8*/
+	r54->v[4] = r54->v[4]>>8;	
+	r[28] = r54->v[4] & 0xff;		/*16*/
+	r54->v[4] = r54->v[4]>>8;
+	r[29] = r54->v[4] & 0xff;		/*24*/
+	r54->v[4] = r54->v[4]>>8;
+	r[30] = r54->v[4] & 0xff;		/*32*/
+	r54->v[4] = r54->v[4]>>8;
+	r[31] = r54->v[4] & 0xff;		/*40*/
+	r54->v[4] = r54->v[4]>>8;
+	r[32] = r54->v[4] & 0xff;		/*48*/
+	r54->v[4] = r54->v[4]>>8;
+	r[33] = r54->v[4] & 0x3;		/*50*/
+}
+
+
 void gfe4_f_gfe(gfe4x *r64, gfe *m){
   	int i;
 
@@ -297,8 +417,8 @@ void set_base_point(gfe4x *r64_1, gfe4x *r64_2, gfe *m){
 void set_base_point(gfe4x *r64, gfe *m){
 	int i;
 
-		0[(u64 *) &r64[0].v[0]] = 61;
-		1[(u64 *) &r64[0].v[0]] = 101;
+		0[(u64 *) &r64[0].v[0]] = 139;
+		1[(u64 *) &r64[0].v[0]] = 260;
 		2[(u64 *) &r64[0].v[0]] = m[1].v[0];
 		3[(u64 *) &r64[0].v[0]] = m[0].v[0];
 	
@@ -311,8 +431,8 @@ void set_base_point(gfe4x *r64, gfe *m){
 
 		0[(u64 *) &r64[1].v[0]] = m[1].v[0];
 		1[(u64 *) &r64[1].v[0]] = m[0].v[0];
-		2[(u64 *) &r64[1].v[0]] = 61;
-		3[(u64 *) &r64[1].v[0]] = 101;
+		2[(u64 *) &r64[1].v[0]] = 139;
+		3[(u64 *) &r64[1].v[0]] = 260;
 	
 	for (i = 1;i < 10;++i){
 		0[(u64 *) &r64[1].v[i]] = m[1].v[i];
@@ -358,6 +478,13 @@ void print_gfe(gfe *r64){
 	int i;
 	for(i=0; i<10; i++)
 		printf("%llu, ",r64->v[i]);
+	printf("\n");
+}
+
+void print_gfe54(gfe54 *r54){
+	int i;
+	for(i=0; i<5; i++)
+		printf("%llu, ",(u64)r54->v[i]);
 	printf("\n");
 }
 

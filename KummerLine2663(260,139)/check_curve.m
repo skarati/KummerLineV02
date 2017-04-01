@@ -1,8 +1,8 @@
 p := 2^266-3;
 F := GF(p);
 Z := Integers();
-a2 := F!260;	print "a^2: ", a2;
-b2 := F!139;	print "b^2: ", b2;
+a2 := F!278;	print "a^2: ", a2;
+b2 := F!67;	print "b^2: ", b2;
 lambda := a2^2/(a2^2-b2^2);	print "lambda: ",lambda;
 beta := (lambda+1)/3;		print "beta: ",beta;
 ap := lambda -3*beta^2;		print "ap: ",ap;

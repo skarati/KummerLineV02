@@ -1,6 +1,8 @@
 #include "basics.h"
 #include "kummer.h"
 #include "measurement.h"
+#include "gfe54.h"
+//#include "gfe54_namespace.h"
 
 int main(){
 	int i,j,k,bit;
@@ -9,10 +11,12 @@ int main(){
 	//unsigned char bit;
 	gfe4x npi,np,npt,temp2;
 	gfe work[4],re[4],temp,x,z,xinvz;
+	gfe54 m54,n54,op54;
 	
 	//sample scalar: you can change it and also can pass it as an argument of the main
-	unsigned char n[33] = { 248, 120, 184, 82, 8, 149, 129, 34, 27, 154, 224, 137, 112, 239, 152, 95, 151,146, 255, 170, 108, 82, 3, 239, 167, 50, 77, 129, 124, 221, 102, 182, 51};
+	unsigned char n[33] = { 248, 140, 32, 244, 142, 110, 98, 104, 139, 69, 181, 115, 219, 202, 144, 188, 15, 199, 29, 26, 236, 6, 78, 213, 139, 95, 154, 118, 245, 82, 50, 209, 32};
 	unsigned char op[34];
+
 
 	convert_ctoi(&work[0],base);
 	convert_ctoi(&work[1],base+34);
@@ -26,7 +30,7 @@ int main(){
 	mulconst_gfe4(&npi, &npi, &ab11);
 	gfe4_f_gfe_part2(&npi, work);
 
-
+	
 
 	MEASURE({
 		scalar_mult_fixed_base(op, npi, n); //n[0] = op[0];
