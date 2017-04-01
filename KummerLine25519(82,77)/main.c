@@ -1,6 +1,8 @@
 #include "basics.h"
 #include "kummer.h"
 #include "measurement.h"
+#include "gfe51.h"
+
 
 int main(){
 	int i,j,k,bit;
@@ -27,7 +29,7 @@ int main(){
 	gfe4_f_gfe_part2(&npi, work);
 
 	MEASURE({
-		scalar_mult_fixed_base(op, npi, n);
+		scalar_mult_fixed_base(op, npi, n); //n[0] = op[0];
 	});
 
 	printf("Total CPU cycles for fixed-base scalar multiplication: %.2f.\n", RDTSC_total_clk);
@@ -38,7 +40,7 @@ int main(){
 	base_rand[32] = 1;
 	for(i=33;i<64;i++) base_rand[i]=0;
 	MEASURE({
-		scalar_mult_var_base(op, base_rand, n);
+		scalar_mult_var_base(op, base_rand, n); //n[0] = op[0];
 	});
 	printf("Total CPU cycles for variable-base scalar multiplication: %.2f.\n", RDTSC_total_clk);
 	print_c(op);
