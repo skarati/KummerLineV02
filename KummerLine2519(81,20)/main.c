@@ -1,6 +1,8 @@
 #include "basics.h"
 #include "kummer.h"
 #include "measurement.h"
+#include "gfe51.h"
+
 
 int main(){
 	int i,j,k,bit;
@@ -11,8 +13,7 @@ int main(){
 	gfe temp,work[4],re[4],x,z,xinvz;
 	
 	//sample scalar: you can change it and also can pass it as an argument of the main
-	unsigned char n[31] = { 141, 110, 81, 215, 193, 226, 230, 93, 155, 59, 99, 26, 126, 24, 124, 160, 153,
-71, 144, 248, 170, 228, 111, 35, 211, 163, 237, 228, 80, 143, 236};
+	unsigned char n[31] = { 141, 110, 81, 215, 193, 226, 230, 93, 155, 59, 99, 26, 126, 24, 124, 160, 153,71, 144, 248, 170, 228, 111, 35, 211, 163, 237, 228, 80, 143, 236};
 	unsigned char op[32];
 	
 	convert_ctoi(&work[0],base);

@@ -2,21 +2,17 @@
 #define KUMMER_H_
 #include "vecmult.h"
 #include "mult.h"
+#include "gfe51.h"
 
-inline void mul_gfe(gfe *r32, gfe *m, gfe *n);
-inline void sq_gfe(gfe *r32, gfe *m);
-//inline unsigned int gt0(gfe *m);
-//inline unsigned int ugtv(gfe *m, gfe *n);
-//inline void div2(gfe *m);
-//inline void mul2(gfe *m);
-//inline void addp(gfe *m, gfe *p);
-//inline void subuv(gfe *op, gfe *m, gfe *n);
-//inline void adduv(gfe *op, gfe *m, gfe *n);
-inline void invert(gfe *op, gfe *m);
+
+#define sq_gfe51(x, y) nsq_gfe51(x, y, 1)
+inline void invert(gfe51 *op, gfe51 *m);
 
 inline void gfe4x_permute(gfe4x *op,gfe4x *ip, int hl);
+inline void gfe4x_hadamardUnreduced(gfe4x *op, gfe4x *ip);
 inline void gfe4x_hadamard(gfe4x *op, gfe4x *ip);
 inline void mul_gfe4(gfe4x *r64, gfe4x *m, gfe4x *n);
+inline void mul_gfe4_expand(gfe4x *r64, gfe4x *m, gfe4x *n);
 inline void sq_gfe4(gfe4x *r64, gfe4x *m);
 inline void mulconst_gfe4(gfe4x *r64, gfe4x *a, const vec *b);
 inline void mulconst_gfe4Unreduced(gfe4x *r64, gfe4x *a, const vec *b);
@@ -27,6 +23,7 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 	int bit, i, j, k;
 	gfe4x np,npt;
 	gfe re[4],x,z,temp,xinvz;
+	gfe51	x51,z51,t51;
 	
 	np = base;
 	gfe4_t_gfe(&np, re);
@@ -43,12 +40,10 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 			bit = (n[i]>>j) & 1;
 			gfe4x_hadamard(&np, &np);
 			gfe4x_permute(&npt,&np,bit);
-			mul_gfe4(&np, &np, &npt);
-			//mulconst_gfe4(&np, &np, &BABA);
+			mul_gfe4_expand(&np, &np, &npt);
 			mulconst_gfe4Unreduced(&np, &np, &BABA);
 			gfe4x_hadamard(&np, &np);
 			sq_gfe4(&np, &np);
-			//mulconst_gfe4(&np, &np, &abxz[bit]);
 			mulconst_gfe4Unreduced(&np, &np, &abxz[bit]);
 		}
 
@@ -58,10 +53,13 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 	gfe4_t_gfe(&np, re);
 	x = re[0];
 	z = re[1];
-	invert(&temp,&z);
-	mul_gfe(&temp,&x,&temp);
-	makeUnique(&temp,&temp);
-	convert_itoc(&temp,op);
+	pack51(&x,&x51);
+	pack51(&z,&z51);
+	invert(&t51,&z51);
+	mul_gfe51(&t51,&x51,&t51);
+	REDUCEPARTB2519_51(t51.v[0],t51.v[1],t51.v[2],t51.v[3],t51.v[4]);
+	makeUnique(&t51,&t51);
+	convert_i51toc(&t51,op);
 
 	return xinvz.v[0];
 
@@ -72,6 +70,7 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 	gfe4x np,npt;
 	gfe work[4],re[4],x,z,temp,xinvz;
 	gfe4x temp2,pabxz[2],pzxba;
+	gfe51	x51,z51,t51;
 		
 	convert_ctoi(&work[0],base_rand);
 	convert_ctoi(&work[1],base_rand+32);
@@ -97,9 +96,9 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
   	for(i=30;i>=0;i--){
     		for(;j>=0;j--){
 			bit = (n[i]>>j) & 1;
-			gfe4x_hadamard(&np, &np);
+			gfe4x_hadamardUnreduced(&np, &np);
 			gfe4x_permute(&npt,&np,bit);
-			mul_gfe4(&np, &np, &npt);
+			mul_gfe4_expand(&np, &np, &npt);
 			mulconst_gfe4Unreduced(&np, &np, &BABA);
 			gfe4x_hadamard(&np, &np);
 			sq_gfe4(&np, &np);
@@ -110,10 +109,13 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 	gfe4_t_gfe(&np, re);
 	x = re[0];
 	z = re[1];
-	invert(&temp,&z);
-	mul_gfe(&temp,&x,&temp);
-	makeUnique(&temp,&temp);
-	convert_itoc(&temp,op);
+	pack51(&x,&x51);
+	pack51(&z,&z51);
+	invert(&t51,&z51);
+	mul_gfe51(&t51,&x51,&t51);
+	REDUCEPARTB2519_51(t51.v[0],t51.v[1],t51.v[2],t51.v[3],t51.v[4]);
+	makeUnique(&t51,&t51);
+	convert_i51toc(&t51,op);
 
 	return xinvz.v[0];
 }
@@ -133,7 +135,7 @@ inline void gfe4x_permute(gfe4x *op,gfe4x *ip, int hl){
 	op->v[7] = _mm256_permutevar8x32_epi32(ip->v[7],perm_mask);
 	op->v[8] = _mm256_permutevar8x32_epi32(ip->v[8],perm_mask);
 }
-
+/*
 inline void mul_gfe(gfe *r64, gfe *m, gfe *n){
 
 	u64 t[17];
@@ -146,6 +148,7 @@ inline void mul_gfe(gfe *r64, gfe *m, gfe *n){
 
 }
 
+
 inline void sq_gfe(gfe *r64, gfe *m){
 
 	u64 t[17];
@@ -155,7 +158,7 @@ inline void sq_gfe(gfe *r64, gfe *m){
 
 	REDUCE2519(r64->v[0],r64->v[1],r64->v[2],r64->v[3],r64->v[4],r64->v[5],r64->v[6],r64->v[7],r64->v[8],t);
 }
-
+*/
 
 inline void mul_gfe4(gfe4x *r64, gfe4x *m, gfe4x *n) {
 
@@ -167,6 +170,18 @@ inline void mul_gfe4(gfe4x *r64, gfe4x *m, gfe4x *n) {
 
 	VECREDUCE2519(r64->v[0],r64->v[1],r64->v[2],r64->v[3],r64->v[4],r64->v[5],r64->v[6],r64->v[7],r64->v[8], t);
 }
+
+inline void mul_gfe4_expand(gfe4x *r64, gfe4x *m, gfe4x *n) {
+
+	vec t[17]; 
+
+	VECMULT9(t[0],t[1],t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],t[10],t[11],t[12],t[13],t[14],t[15],t[16],
+	m->v[0], m->v[1], m->v[2], m->v[3], m->v[4], m->v[5], m->v[6], m->v[7], m->v[8],
+	n->v[0], n->v[1], n->v[2], n->v[3], n->v[4], n->v[5], n->v[6], n->v[7], n->v[8]);
+
+	VECREDUCE2519expand(r64->v[0],r64->v[1],r64->v[2],r64->v[3],r64->v[4],r64->v[5],r64->v[6],r64->v[7],r64->v[8], t);
+}
+
 
 inline void sq_gfe4(gfe4x *r64, gfe4x *m){
 
@@ -241,6 +256,70 @@ inline void gfe4x_hadamard(gfe4x *op, gfe4x *ip){
 	VECREDUCEPARTB2519(op->v[0],op->v[1],op->v[2],op->v[3],op->v[4],op->v[5],op->v[6],op->v[7],op->v[8]);
 	
 }
+
+
+
+const vec hadamardoffsetUnreduced[9] =   {{0, 0x1FFFFFEF,0, 0x1FFFFFEF},
+					{0, 0x1FFFFFFF,0, 0x1FFFFFFF},
+					{0, 0x1FFFFFFF,0, 0x1FFFFFFF},
+					{0, 0x1FFFFFFF,0, 0x1FFFFFFF},
+					{0, 0x1FFFFFFF,0, 0x1FFFFFFF},
+					{0, 0x1FFFFFFF,0, 0x1FFFFFFF},
+					{0, 0x1FFFFFFF,0, 0x1FFFFFFF},
+					{0, 0x1FFFFFFF,0, 0x1FFFFFFF},
+					{0, 0xFFFFFFF,0, 0xFFFFFFF}};
+
+inline void gfe4x_hadamardUnreduced(gfe4x *op, gfe4x *ip){
+  	int i;
+	vec t[9];
+	vec temp1,temp2,temp3,temp;
+
+	temp = ip->v[0];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[0] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[0]),_mm256_xor_si256(temp3,plusminusplusminus));
+
+	temp = ip->v[1];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[1] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[1]),_mm256_xor_si256(temp3,plusminusplusminus));
+
+	temp = ip->v[2];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[2] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[2]),_mm256_xor_si256(temp3,plusminusplusminus));
+
+	temp = ip->v[3];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[3] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[3]),_mm256_xor_si256(temp3,plusminusplusminus));
+
+	temp = ip->v[4];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[4] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[4]),_mm256_xor_si256(temp3,plusminusplusminus));
+
+	temp = ip->v[5];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[5] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[5]),_mm256_xor_si256(temp3,plusminusplusminus));
+
+	temp = ip->v[6];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[6] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[6]),_mm256_xor_si256(temp3,plusminusplusminus));
+
+	temp = ip->v[7];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[7] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[7]),_mm256_xor_si256(temp3,plusminusplusminus));
+
+	temp = ip->v[8];
+	temp2 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(2,2,0,0));
+	temp3 = _mm256_permute4x64_epi64 (temp,_MM_SHUFFLE(3,3,1,1));
+	op->v[8] = _mm256_add_epi64(_mm256_add_epi64(temp2,hadamardoffsetUnreduced[8]),_mm256_xor_si256(temp3,plusminusplusminus));
+}
+
 
 
 inline void mulconst_gfe4Unreduced(gfe4x *r64, gfe4x *a, const vec *b){
@@ -488,57 +567,57 @@ inline void invert(gfe *op, gfe *m){
 	mul_gfe(op, &r, &adjust_invert);
 }
 */
-inline void invert(gfe *op, gfe *m){
+inline void invert(gfe51 *op, gfe51 *m){
 	int i;
-	gfe t;
-	gfe x2, x3, x4, x5, x8, x9, x11, x_5_0, x_10_0, x_15_0, x_30_0;
-	gfe x_31_1, x_32_2, x_62_1, x_63_2, x_124_1, x_125_2, x_248_2;
-
-	/* 2  */		sq_gfe(&x2,m);
-	/* 2^2	*/		sq_gfe(&x4,&x2);
-	/* 5 */			mul_gfe(&x5, &x4, m);
-	/* 8  */		sq_gfe(&t,&x4);
-	/* 9  */		mul_gfe(&x9, &t, m);
-	/* 11 */		mul_gfe(&x11, &x9, &x2);
-	/* 22 */		sq_gfe(&t,&x11);
-	/* 2^5-1 */		mul_gfe(&x_5_0, &x9, &t);
-
-	/*2^6 - 2*/		sq_gfe(&x_10_0,&x_5_0);
-	/*2^10 - 2^5*/		for(i=0;i<4;i++) sq_gfe(&x_10_0,&x_10_0);
-	/*2^10 - 1 */		mul_gfe(&x_10_0, &x_10_0, &x_5_0);
-
-	/*2^11 - 2*/		sq_gfe(&x_15_0,&x_10_0);
-	/*2^15 - 2^5*/		for(i=0;i<4;i++) sq_gfe(&x_15_0,&x_15_0);
-	/*2^15 - 1 */		mul_gfe(&x_15_0, &x_15_0, &x_5_0);
-
-
-	/*2^16 - 2*/		sq_gfe(&x_30_0,&x_15_0);
-	/*2^30 - 2^15*/		for(i=0;i<14;i++) sq_gfe(&x_30_0,&x_30_0);
-	/*2^30 - 1 */		mul_gfe(&x_30_0, &x_15_0, &x_30_0);
-
-	/*2^31 - 2*/		sq_gfe(&x_31_1,&x_30_0);
-
-	/*2^32 - 2^2*/		sq_gfe(&x_32_2,&x_31_1);
-	/*2^33 - 2^3*/		sq_gfe(&t,&x_32_2);
-	/*2^62 - 2^32*/		for(i=0;i<29;i++) sq_gfe(&t,&t);
-	/*2^62 - 2^2 */		mul_gfe(&t, &t, &x_32_2);
-	/*2^62 - 2 */		mul_gfe(&x_62_1, &t, &x2);
-
-	/*2^63 - 2^2*/		sq_gfe(&x_63_2,&x_62_1);
-	/*2^64 - 2^3*/		sq_gfe(&t,&x_63_2);
-	/*2^124 - 2^63*/	for(i=0;i<60;i++) sq_gfe(&t,&t);
-	/*2^124 - 2^2 */	mul_gfe(&t, &t, &x_63_2);
-	/*2^124 - 2 */		mul_gfe(&x_124_1, &t, &x2);
+	gfe51 t;
+	gfe51 x2, x3, x4, x5, x8, x9, x11, x_5_0, x_10_0, x_15_0, x_30_0;
+	gfe51 x_31_1, x_32_2, x_62_1, x_63_2, x_124_1, x_125_2, x_248_2;
 	
-	/*2^125 - 2^2*/		sq_gfe(&x_125_2,&x_124_1);
-	/*2^126 - 2^3*/		sq_gfe(&t,&x_125_2);
-	/*2^248 - 2^125*/	for(i=0;i<122;i++) sq_gfe(&t,&t);
-	/*2^248 - 2^2 */	mul_gfe(&t, &t, &x_125_2);
-	/*2^248 - 2 */		mul_gfe(&t, &t, &x2);
+	/* 2  */		sq_gfe51(&x2,m);
+				sq_gfe51(&x4,&x2);
+	/* 5 */			mul_gfe51(&x5, &x4, m);
+	/* 8  */		sq_gfe51(&t,&x4);
+	/* 9  */		mul_gfe51(&x9, &t, m);
+	/* 11 */		mul_gfe51(&x11, &x9, &x2);
+	/* 22 */		sq_gfe51(&t,&x11);
+	/* 2^5-1 */		mul_gfe51(&x_5_0, &x9, &t);
+
+	/*2^6 - 2*/		sq_gfe51(&x_10_0,&x_5_0);
+	/*2^10 - 2^5*/		nsq_gfe51(&x_10_0,&x_10_0,4); //for(i=0;i<4;i++) sq_gfe(&x_10_0,&x_10_0);
+	/*2^10 - 1 */		mul_gfe51(&x_10_0, &x_10_0, &x_5_0);
+
+	/*2^11 - 2*/		sq_gfe51(&x_15_0,&x_10_0);
+	/*2^15 - 2^5*/		nsq_gfe51(&x_15_0,&x_15_0,4); //for(i=0;i<4;i++) sq_gfe(&x_15_0,&x_15_0);
+	/*2^15 - 1 */		mul_gfe51(&x_15_0, &x_15_0, &x_5_0);
+
+
+	/*2^16 - 2*/		sq_gfe51(&x_30_0,&x_15_0);
+	/*2^30 - 2^15*/		nsq_gfe51(&x_30_0,&x_30_0,14);//for(i=0;i<14;i++) sq_gfe(&x_30_0,&x_30_0);
+	/*2^30 - 1 */		mul_gfe51(&x_30_0, &x_15_0, &x_30_0);
+
+	/*2^31 - 2*/		sq_gfe51(&x_31_1,&x_30_0);
+
+	/*2^32 - 2^2*/		sq_gfe51(&x_32_2,&x_31_1);
+	/*2^33 - 2^3*/		sq_gfe51(&t,&x_32_2);
+	/*2^62 - 2^32*/		nsq_gfe51(&t,&t,29);//for(i=0;i<29;i++) sq_gfe(&t,&t);
+	/*2^62 - 2^2 */		mul_gfe51(&t, &t, &x_32_2);
+	/*2^62 - 2 */		mul_gfe51(&x_62_1, &t, &x2);
+
+	/*2^63 - 2^2*/		sq_gfe51(&x_63_2,&x_62_1);
+	/*2^64 - 2^3*/		sq_gfe51(&t,&x_63_2);
+	/*2^124 - 2^63*/	nsq_gfe51(&t,&t,60);//for(i=0;i<60;i++) sq_gfe(&t,&t);
+	/*2^124 - 2^2 */	mul_gfe51(&t, &t, &x_63_2);
+	/*2^124 - 2 */		mul_gfe51(&x_124_1, &t, &x2);
 	
-	/*2^251-2^4 */		for(i=0;i<3;i++) sq_gfe(&t,&t);;
+	/*2^125 - 2^2*/		sq_gfe51(&x_125_2,&x_124_1);
+	/*2^126 - 2^3*/		sq_gfe51(&t,&x_125_2);
+	/*2^248 - 2^125*/	nsq_gfe51(&t,&t,122);//for(i=0;i<122;i++) sq_gfe(&t,&t);
+	/*2^248 - 2^2 */	mul_gfe51(&t, &t, &x_125_2);
+	/*2^248 - 2 */		mul_gfe51(&t, &t, &x2);
 	
-	/*2^251 - 11*/		mul_gfe(op, &t, &x5);
+	/*2^251-2^4 */		nsq_gfe51(&t,&t,3); //for(i=0;i<3;i++) sq_gfe(&t,&t);;
+	
+	/*2^251 - 11*/		mul_gfe51(op, &t, &x5);
 
 }
 

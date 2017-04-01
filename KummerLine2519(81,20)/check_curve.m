@@ -23,6 +23,8 @@ pr_t := IsPrime(max_t);		print "Is lt prime: ",pr_t;
 size_t := Log(2,max_t);		print "Size of lt: ",size_t;
 h_t := twist_ord/max_t;		print "Cofactor of twist, ht: ",h_t;
 
+
+/*Find all the  all prime divisors of of p, the curve order p+1-t, the twist order p+1+t, and t^2-4p; and, recursively, all prime divisors of q-1 for each q in the list. */
 pList:=[p,ord,twist_ord];
 pList:=Append(pList,AbsoluteValue(t^2-4*p));
 pL:=[];
@@ -66,6 +68,7 @@ while IsDefined(pL, i) do
 	i:=i+1;	
 end while;
 
+/*Find the Embedding Degree k*/
 gcdlp := GCD(l,p);		print "GCD of l and p :", gcdlp;
 u := F1!(p mod l);
 print u;
@@ -95,6 +98,8 @@ end if;
 
 print "embedding degree, d : ",d;
 print "=(l-1)/",(l-1)/d;
+
+/*Find the complex multiplication field discriminant of E_\mu*/
 print "Is l^2>16p";
 if l^2 ge 16*p then
 	print "= Yes, l^2-16*p = ",l^2-16*p;
@@ -160,6 +165,8 @@ if d eq 1 then
 	end while;
 end if;
 print "twistl : ", twistl;
+
+/*Find the Embedding Degree k_T*/
 F1 := GF(twistl);
 gcdlp := GCD(twistl,p);		print "GCD of twistl and p :", gcdlp;
 u := F1!(p mod twistl);
@@ -190,6 +197,8 @@ end if;
 
 print "embedding degree of twist, twistd : ",d;
 print "=(twistl-1)/",(twistl-1)/d;
+
+/*rho security*/
 rho := Log(4,pi4*twistl);
 print "twist rho security : ",rho;
 precomp := 0;
