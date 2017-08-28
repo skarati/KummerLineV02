@@ -12,6 +12,7 @@ int main(){
 	gfe4x npi,np,npt,temp2;
 	gfe temp,work[4],re[4],x,z,xinvz;
 	
+	printf("\nKL251(81,20)===\n");
 	//sample scalar: you can change it and also can pass it as an argument of the main
 	unsigned char n[31] = { 141, 110, 81, 215, 193, 226, 230, 93, 155, 59, 99, 26, 126, 24, 124, 160, 153,71, 144, 248, 170, 228, 111, 35, 211, 163, 237, 228, 80, 143, 236};
 	unsigned char op[32];
@@ -33,8 +34,9 @@ int main(){
 	MEASURE({
 		scalar_mult_fixed_base(op, npi, n);
 	});
-
-	printf("Total CPU cycles for fixed-base scalar multiplication: %.2f.\n", RDTSC_total_clk);
+	printf("Total CPU cycles for fixed-base scalar multiplication Min: %.2f.\n", RDTSC_clk_min);
+	printf("Total CPU cycles for fixed-base scalar multiplication Median: %.2f.\n", RDTSC_clk_median);
+	printf("Total CPU cycles for fixed-base scalar multiplication Max: %.2f.\n", RDTSC_clk_max);
 	print_c(op);
 
 	unsigned char base_rand[64];
@@ -44,7 +46,9 @@ int main(){
 	MEASURE({
 		scalar_mult_var_base(op, base_rand, n);
 	});
-	printf("Total CPU cycles for variable-base scalar multiplication: %.2f.\n", RDTSC_total_clk);
+	printf("Total CPU cycles for variable-base scalar multiplication Min: %.2f.\n", RDTSC_clk_min);
+	printf("Total CPU cycles for variable-base scalar multiplication Median: %.2f.\n", RDTSC_clk_median);
+	printf("Total CPU cycles for variable-base scalar multiplication Max: %.2f.\n", RDTSC_clk_max);
 	print_c(op);
 
 	return 0;
