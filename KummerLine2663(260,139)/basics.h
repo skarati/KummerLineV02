@@ -72,10 +72,10 @@ inline void makeUnique(gfe54 *op, gfe54 *inp) {
         for(i=0;i<5;i++) t[0].v[i] = inp->v[i];
         for(i=1;i<5;i++) t[1].v[i] = 0; t[1].v[0] = inp->v[0] - ((1ULL<<54)-3);
         if (
-                ((inp->v[4]&mask27)==mask50) &&
-                ((inp->v[3]&mask27)==mask54) &&
-                ((inp->v[2]&mask27)==mask54) &&
-                ((inp->v[1]&mask27)==mask54) &&
+                ((inp->v[4]&mask50)==mask50) &&
+                ((inp->v[3]&mask54)==mask54) &&
+                ((inp->v[2]&mask54)==mask54) &&
+                ((inp->v[1]&mask54)==mask54) &&
                 (inp->v[0]>=((1ULL<<54)-3))
         ) {
                 for(i=0;i<5;i++) op->v[i] = t[1].v[i];
