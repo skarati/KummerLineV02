@@ -28,7 +28,7 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 	np = base;
 	gfe4_t_gfe(&np, re);
 	bit = 0;
-	j = 7;	
+	j = 3;	
 	while(bit == 0){
 		bit = (n[31]>>j) & 1;
 		j--;
@@ -51,10 +51,8 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 	}
 	VECREDUCEPARTB25519((&np)->v[0],(&np)->v[1],(&np)->v[2],(&np)->v[3],(&np)->v[4],(&np)->v[5],(&np)->v[6],(&np)->v[7],(&np)->v[8],(&np)->v[9]);
 	gfe4_t_gfe(&np, re);
-	x = re[0];
-	z = re[1];
-	gfe51_pack(&z,&z51);
-	gfe51_pack(&x,&x51);
+	gfe51_pack(&re[1],&z51);
+	gfe51_pack(&re[0],&x51);
 	invert(&temp3, &z51);
 	mul_gfe51(&temp3,&x51,&temp3);
 	REDUCEPARTB25519_51(temp.v[0],temp.v[1],temp.v[2],temp.v[3],temp.v[4]);
@@ -85,7 +83,7 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 	gfe4_f_gfe_part2(&np, work);
 
 	bit = 0;
-	j = 7;	
+	j = 3;	
 	while(bit == 0){
 		bit = (n[31]>>j) & 1;
 		j--;
@@ -107,10 +105,8 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 		j=7;
 	}
 	gfe4_t_gfe(&np, re);
-	x = re[0];
-	z = re[1];
-	gfe51_pack(&z,&z51);
-	gfe51_pack(&x,&x51);
+	gfe51_pack(&re[1],&z51);
+	gfe51_pack(&re[0],&x51);
 	invert(&temp3, &z51);
 	mul_gfe51(&temp3,&x51,&temp3);
 	REDUCEPARTB25519_51(temp.v[0],temp.v[1],temp.v[2],temp.v[3],temp.v[4]);
