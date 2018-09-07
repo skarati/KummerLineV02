@@ -27,13 +27,17 @@ inline u64 scalar_mult_fixed_base(unsigned char op[34], gfe4x base, unsigned cha
 	np = base;
 	gfe4_t_gfe(&np, re);
 	bit = 0;
-	j = 6;	
+	i =32;
+	j=6;
 	while(bit == 0){
-		bit = (n[32]>>j) & 1;
+		bit = (n[i]>>j) & 1;
 		j--;
+		if(j==-1) {i--; j=7;}
 	}
-  	for(i=32;i>=0;i--){
-    		for(;j>=0;j--){
+	//k = 1;
+	
+  	for(;i>=0;i--){
+       		for(;j>=0;j--){
 			bit = (n[i]>>j) & 1;
 			gfe4x_hadamard(&np, &np);
 			gfe4x_permute(&npt,&np,bit);
@@ -48,8 +52,8 @@ inline u64 scalar_mult_fixed_base(unsigned char op[34], gfe4x base, unsigned cha
 	}
 	VECREDUCEPARTB2663((&np)->v[0],(&np)->v[1],(&np)->v[2],(&np)->v[3],(&np)->v[4],(&np)->v[5],(&np)->v[6],(&np)->v[7],(&np)->v[8],(&np)->v[9]);
 	gfe4_t_gfe(&np, re);
-	x = re[0];	pack54(&x,&x54);
-	z = re[1];	pack54(&z,&z54);
+	pack54(&re[0],&x54);
+	pack54(&re[1],&z54);
 	invert(&temp,&z54);
 	mul_gfe54(&temp,&x54,&temp);
 	REDUCEPARTB2663(temp.v[0],temp.v[1],temp.v[2],temp.v[3],temp.v[4]);
@@ -80,16 +84,17 @@ inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[64
 	gfe4_f_gfe_part2(&np, work);
 
 	bit = 0;
-	j = 6;	
+	i =32;
+	j=6;
 	while(bit == 0){
-		bit = (n[32]>>j) & 1;
+		bit = (n[i]>>j) & 1;
 		j--;
+		if(j==-1) {i--; j=7;}
 	}
-	k = 1;
+	//k = 1;
 	
-	
-  	for(i=32;i>=0;i--){
-    		for(;j>=0;j--){
+  	for(;i>=0;i--){
+       		for(;j>=0;j--){
 			bit = (n[i]>>j) & 1;
 			gfe4x_hadamardUnreduced(&np, &np);
 			gfe4x_permute(&npt,&np,bit);
@@ -103,8 +108,8 @@ inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[64
 	}
 	VECREDUCEPARTB2663((&np)->v[0],(&np)->v[1],(&np)->v[2],(&np)->v[3],(&np)->v[4],(&np)->v[5],(&np)->v[6],(&np)->v[7],(&np)->v[8],(&np)->v[9]);
 	gfe4_t_gfe(&np, re);
-	x = re[0];	pack54(&x,&x54);
-	z = re[1];	pack54(&z,&z54);
+	pack54(&re[0],&x54);
+	pack54(&re[1],&z54);
 	invert(&temp,&z54);
 	mul_gfe54(&temp,&x54,&temp);
 	REDUCEPARTB2663(temp.v[0],temp.v[1],temp.v[2],temp.v[3],temp.v[4]);
