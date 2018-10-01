@@ -16,7 +16,7 @@ inline void sq_gfe4(gfe4x *r64, gfe4x *m);
 inline void mulconst_gfe4(gfe4x *r64, gfe4x *a, const vec *b);
 inline void mulconst_gfe4Unreduced(gfe4x *r64, gfe4x *a, const vec *b);
 inline u64 scalar_mult_fixed_base(unsigned char op[34], gfe4x base, unsigned char n[33]);
-inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[64], unsigned char n[33]);
+inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[68], unsigned char n[33]);
 
 inline u64 scalar_mult_fixed_base(unsigned char op[34], gfe4x base, unsigned char n[33]){
 	int bit, i, j, k;
@@ -26,9 +26,10 @@ inline u64 scalar_mult_fixed_base(unsigned char op[34], gfe4x base, unsigned cha
 	
 	np = base;
 	gfe4_t_gfe(&np, re);
+
 	bit = 0;
 	i =32;
-	j=6;
+	j=7;
 	while(bit == 0){
 		bit = (n[i]>>j) & 1;
 		j--;
@@ -64,7 +65,7 @@ inline u64 scalar_mult_fixed_base(unsigned char op[34], gfe4x base, unsigned cha
 
 }
 
-inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[64], unsigned char n[33]){
+inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[68], unsigned char n[33]){
 	int bit, i, j, k;
 	gfe4x np,npt;
 	gfe work[4],re[4],x,z,xinvz;
@@ -72,7 +73,7 @@ inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[64
 	gfe54 x54,z54,temp;
 		
 	convert_ctoi(&work[0],base_rand);
-	convert_ctoi(&work[1],base_rand+32);
+	convert_ctoi(&work[1],base_rand+34);
 	set_base_point(pabxz,work);
 	gfe4_f_gfe_part1(&np, work);
 	gfe4x_hadamard(&np, &np);
@@ -85,7 +86,7 @@ inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[64
 
 	bit = 0;
 	i =32;
-	j=6;
+	j=7;
 	while(bit == 0){
 		bit = (n[i]>>j) & 1;
 		j--;
