@@ -14,9 +14,17 @@ int main(){
 	
 	printf("\nKL251(81,20)===\n");
 	//sample scalar: you can change it and also can pass it as an argument of the main
-	unsigned char n[31] = { 141, 110, 81, 215, 193, 226, 230, 93, 155, 59, 99, 26, 126, 24, 124, 160, 153,71, 144, 248, 170, 228, 111, 35, 211, 163, 237, 228, 80, 143, 236};
+	unsigned char n[32] = { 141, 110, 81, 215, 193, 226, 230, 93, 155, 59, 99, 26, 126, 24, 124, 160, 153,71, 144, 248, 170, 228, 111, 35, 211, 163, 237, 228, 80, 143, 236, 255};
 	unsigned char op[32];
 	
+	n[31] = n[31]&0x7;
+	n[31] = n[31]|0x4;
+	n[0] = n[0] & 0xF8;
+
+	printf("\n");
+	for(i=0;i<32;i++) printf("%hhu, ",n[i]);
+	printf("\n\n");
+
 	convert_ctoi(&work[0],base);
 	convert_ctoi(&work[1],base+32);
 		
@@ -38,6 +46,7 @@ int main(){
 	printf("Total CPU cycles for fixed-base scalar multiplication Median: %.2f.\n", RDTSC_clk_median);
 	printf("Total CPU cycles for fixed-base scalar multiplication Max: %.2f.\n", RDTSC_clk_max);
 	print_c(op);
+	printf("\n\n");
 
 	unsigned char base_rand[64];
 	for(i=0;i<32;i++) base_rand[i]=op[i];
@@ -50,7 +59,7 @@ int main(){
 	printf("Total CPU cycles for variable-base scalar multiplication Median: %.2f.\n", RDTSC_clk_median);
 	printf("Total CPU cycles for variable-base scalar multiplication Max: %.2f.\n", RDTSC_clk_max);
 	print_c(op);
-
+	printf("\n\n");
 	return 0;
 }
 

@@ -16,10 +16,10 @@ inline void mul_gfe4_expand(gfe4x *r64, gfe4x *m, gfe4x *n);
 inline void sq_gfe4(gfe4x *r64, gfe4x *m);
 inline void mulconst_gfe4(gfe4x *r64, gfe4x *a, const vec *b);
 inline void mulconst_gfe4Unreduced(gfe4x *r64, gfe4x *a, const vec *b);
-inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned char n[31]);
-inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64], unsigned char n[31]);
+inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned char n[32]);
+inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64], unsigned char n[32]);
 
-inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned char n[31]){
+inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned char n[32]){
 	int bit, i, j, k;
 	gfe4x np,npt;
 	gfe re[4],x,z,temp,xinvz;
@@ -28,15 +28,14 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 	np = base;
 	gfe4_t_gfe(&np, re);
 	bit = 0;
-	j=7;
-	i =30;
+	j=3;
+	i =31;
 	while(bit == 0){
 		bit = (n[i]>>j) & 1;
 		j--;
 		if(j==-1) {i--; j=7;}
 	}
-	//k = 1;
-	
+
   	for(;i>=0;i--){
         	for(;j>=0;j--){
 			bit = (n[i]>>j) & 1;
@@ -65,7 +64,7 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 
 }
 
-inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64], unsigned char n[31]){
+inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64], unsigned char n[32]){
 	int bit, i, j, k;
 	gfe4x np,npt;
 	gfe work[4],re[4],x,z,temp,xinvz;
@@ -85,14 +84,13 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 	gfe4_f_gfe_part2(&np, work);
 
 	bit = 0;
-	i =30;
-	j=7;
+	i =31;
+	j=3;
 	while(bit == 0){
 		bit = (n[i]>>j) & 1;
 		j--;
 		if(j==-1) {i--; j=7;}
 	}
-	//k = 1;
 	
   	for(;i>=0;i--){
         	for(;j>=0;j--){
