@@ -28,7 +28,7 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 	np = base;
 	gfe4_t_gfe(&np, re);
 	bit = 0;
-	j = 6;
+	j = 7;
 	i=31;
 	while(bit == 0){
 		bit = (n[i]>>j) & 1;
@@ -88,7 +88,7 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 	gfe4_f_gfe_part2(&np, work);
 
 	bit = 0;
-	j = 6;	
+	j = 7;	
 	i=31;
 	while(bit == 0){
 		bit = (n[i]>>j) & 1;

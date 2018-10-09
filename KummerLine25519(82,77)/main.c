@@ -15,7 +15,7 @@ int main(){
 	printf("\nKL25519(82,77)===\n");
 
 	//sample scalar: you can change it and also can pass it as an argument of the main
-	unsigned char n[32] = {102, 66, 236, 240, 6, 149, 92, 7, 43, 107, 163, 255, 64, 145, 5, 203, 230, 54, 147, 234, 197, 5, 215, 214, 124, 189, 226, 219, 235, 71, 20, 63 };
+	unsigned char n[32] = {102, 66, 236, 240, 6, 149, 92, 7, 43, 107, 163, 255, 64, 145, 5, 203, 230, 54, 147, 234, 197, 5, 215, 214, 124, 189, 226, 219, 235, 71, 20, 255 };
 	unsigned char op[32];
 
 	convert_ctoi(&work[0],base);
