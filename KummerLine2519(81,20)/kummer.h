@@ -19,11 +19,16 @@ inline void mulconst_gfe4Unreduced(gfe4x *r64, gfe4x *a, const vec *b);
 inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned char n[32]);
 inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64], unsigned char n[32]);
 
+
 inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned char n[32]){
 	int bit, i, j, k;
+	int prev_bit = 1;
+	int sw;
 	gfe4x np,npt;
 	gfe re[4],x,z,temp,xinvz;
 	gfe51	x51,z51,t51;
+	vec db;
+	vec mulconst;
 	
 	np = base;
 	gfe4_t_gfe(&np, re);
@@ -45,7 +50,11 @@ inline u64 scalar_mult_fixed_base(unsigned char op[32], gfe4x base, unsigned cha
 			mulconst_gfe4Unreduced(&np, &np, &BABA);
 			gfe4x_hadamard(&np, &np);
 			sq_gfe4(&np, &np);
-			mulconst_gfe4Unreduced(&np, &np, &abxz[bit]);
+			db = _mm256_set_epi32(-bit,-bit,-bit,-bit,-bit,-bit,-bit,-bit);
+			mulconst = _mm256_blendv_epi8(abxz[0], abxz[1],db);
+			mulconst_gfe4Unreduced(&np, &np, &mulconst);
+			//mulconst_gfe4Unreduced(&np, &np, &abxz[bit]);
+			
 		}
 
 		j=7;
@@ -70,6 +79,8 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 	gfe work[4],re[4],x,z,temp,xinvz;
 	gfe4x temp2,pabxz[2],pzxba;
 	gfe51	x51,z51,t51;
+	gfe4x mulconst;
+	vec db;
 		
 	convert_ctoi(&work[0],base_rand);
 	convert_ctoi(&work[1],base_rand+32);
@@ -101,7 +112,12 @@ inline u64 scalar_mult_var_base(unsigned char op[32], unsigned char base_rand[64
 			mulconst_gfe4Unreduced(&np, &np, &BABA);
 			gfe4x_hadamard(&np, &np);
 			sq_gfe4(&np, &np);
-			mul_gfe4(&np, &np, &pabxz[bit]);
+			//mul_gfe4(&np, &np, &pabxz[bit]);
+			//mulconst = swap4x(pabxz[0],pabxz[1],bit);
+			db = _mm256_set_epi32(-bit,-bit,-bit,-bit,-bit,-bit,-bit,-bit);
+			for(k=0;k<9;k++) 
+				mulconst.v[k] = _mm256_blendv_epi8(pabxz[0].v[k],pabxz[1].v[k],db);
+			mul_gfe4(&np, &np, &mulconst);
 		}
 		j=7;
 	}
