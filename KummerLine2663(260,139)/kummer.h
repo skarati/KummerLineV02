@@ -23,7 +23,9 @@ inline u64 scalar_mult_fixed_base(unsigned char op[34], gfe4x base, unsigned cha
 	gfe4x np,npt;
 	gfe re[4],x,z,xinvz;
 	gfe54 x54,z54,temp;
-	
+	vec mulconst;
+	vec db;
+
 	np = base;
 	gfe4_t_gfe(&np, re);
 
@@ -46,7 +48,9 @@ inline u64 scalar_mult_fixed_base(unsigned char op[34], gfe4x base, unsigned cha
 			mulconst_gfe4Unreduced(&np, &np, &BABA);
 			gfe4x_hadamard(&np, &np);
 			sq_gfe4(&np, &np);
-			mulconst_gfe4Unreduced(&np, &np, &abxz[bit]);
+			db = _mm256_set_epi32(-bit,-bit,-bit,-bit,-bit,-bit,-bit,-bit);
+			mulconst = _mm256_blendv_epi8(abxz[0], abxz[1],db);
+			mulconst_gfe4Unreduced(&np, &np, &mulconst);
 		}
 
 		j=7;
@@ -71,7 +75,9 @@ inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[68
 	gfe work[4],re[4],x,z,xinvz;
 	gfe4x temp2,pabxz[2],pzxba;
 	gfe54 x54,z54,temp;
-		
+	gfe4x mulconst;
+	vec db;
+	
 	convert_ctoi(&work[0],base_rand);
 	convert_ctoi(&work[1],base_rand+34);
 	set_base_point(pabxz,work);
@@ -103,7 +109,10 @@ inline u64 scalar_mult_var_base(unsigned char op[34], unsigned char base_rand[68
 			mulconst_gfe4Unreduced(&np, &np, &BABA);
 			gfe4x_hadamard(&np, &np);
 			sq_gfe4(&np, &np);
-			mul_gfe4(&np, &np, &pabxz[bit]);
+			db = _mm256_set_epi32(-bit,-bit,-bit,-bit,-bit,-bit,-bit,-bit);
+			for(k=0;k<10;k++) 
+				mulconst.v[k] = _mm256_blendv_epi8(pabxz[0].v[k],pabxz[1].v[k],db);
+			mul_gfe4(&np, &np, &mulconst);
 		}
 		j=7;
 	}
