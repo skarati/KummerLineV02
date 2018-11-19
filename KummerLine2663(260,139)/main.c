@@ -19,7 +19,7 @@ int main(){
 	unsigned char n[33] = { 248, 140, 32, 244, 142, 110, 98, 104, 139, 69, 181, 115, 219, 202, 144, 188, 15, 199, 29, 26, 236, 6, 78, 213, 139, 95, 154, 118, 245, 82, 50, 209, 255};
 	unsigned char op[34];
 
-
+	clampedScalar(n);
 	convert_ctoi(&work[0],base);
 	convert_ctoi(&work[1],base+34);
 		
