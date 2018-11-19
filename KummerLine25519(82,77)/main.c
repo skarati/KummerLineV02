@@ -18,6 +18,7 @@ int main(){
 	unsigned char n[32] = {102, 66, 236, 240, 6, 149, 92, 7, 43, 107, 163, 255, 64, 145, 5, 203, 230, 54, 147, 234, 197, 5, 215, 214, 124, 189, 226, 219, 235, 71, 20, 255 };
 	unsigned char op[32];
 
+	clampedScalar(n);
 	convert_ctoi(&work[0],base);
 	convert_ctoi(&work[1],base+32);
 		

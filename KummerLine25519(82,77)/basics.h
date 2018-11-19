@@ -75,6 +75,50 @@ inline void makeUnique(gfe51 *op, gfe51 *inp) {
         }
 }
 
+void clampedScalar(u8 r[32]){
+	int i,j;
+	u64 r64[4];
+	u64 r2[4], r3[4], carry;
+	__int128_t r12[4];
+
+
+	r[31] = r[31] & 0x13;
+	r[31] = r[31] | 0x10;
+
+	for(i=0;i<4;i++){
+		r64[i] = r[i*8];
+		for(j=1;j<8;j++){
+			r64[i] = r64[i] | ((u64)r[i*8+j]<<(j*8));
+		}
+	}
+
+	r2[0] = r64[0]<<2; 
+	r2[1] = (r64[0]>>62) | (r64[1]<<2);
+	r2[2] = (r64[1]>>62) | (r64[2]<<2);
+	r2[3] = (r64[2]>>62) | (r64[3]<<2);
+
+	r3[0] = r64[0]<<3;
+	r3[1] = (r64[0]>>61) | (r64[1]<<3);
+	r3[2] = (r64[1]>>61) | (r64[2]<<3);
+	r3[3] = (r64[2]>>61) | (r64[3]<<3);
+	
+	r12[0] = (__int128_t)r2[0] + r3[0];
+	r12[1] = (__int128_t)r2[1] + r3[1];
+	r12[2] = (__int128_t)r2[2] + r3[2];
+	r12[3] = (__int128_t)r2[3] + r3[3];
+	
+	carry = r12[0] >> 64; r12[1] += carry; r12[0] = r12[0] & 0xffffffffffffffff;
+	carry = r12[1] >> 64; r12[2] += carry; r12[1] = r12[1] & 0xffffffffffffffff;
+	carry = r12[2] >> 64; r12[3] += carry; r12[2] = r12[2] & 0xffffffffffffffff;
+	
+	for(i=0;i<4;i++){
+		for(j=0;j<8;j++){
+			r[8*i+j] = (u8)(r12[i] & 0xff);
+			r12[i] = r12[i] >> 8;
+		}
+	}
+	
+}
 
 void convert_ctoi(gfe *r64, const unsigned char r[32]){
 	r64->v[0]  = r[0];				/*8*/
