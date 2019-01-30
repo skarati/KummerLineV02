@@ -66,7 +66,7 @@ const u64 mask47 = 0x7fffffffffff;
 inline void makeUnique(gfe51 *op, gfe51 *inp) {
         gfe51 t[2];
         u8 i;
-	//u64 u,v;
+	u64 u,v;
 
        /* for(i=0;i<5;i++) t[0].v[i] = inp->v[i];
         for(i=1;i<5;i++) t[1].v[i] = 0; t[1].v[0] = inp->v[0] - ((1ULL<<51)-9);
